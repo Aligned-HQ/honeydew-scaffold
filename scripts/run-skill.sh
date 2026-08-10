@@ -7,8 +7,10 @@ usage() {
 Usage: run-skill.sh --skill SKILL [TARGET] [options]
 
 Run SKILL through a locally installed agent CLI. TARGET is relative to this
-repository (or an absolute path inside it). For task-fixer and task-review the
-default target is task/. trajectory-review requires an explicit target.
+repository (or an absolute path inside it). For a submission-ready scaffold
+run, task-fixer and task-review target the literal task/ directory, while
+trajectory-review targets trajectories/. A task-specific Harbor identity belongs
+in task/task.toml under [task].name; it is not a directory rename.
 
 Skills:
   task-fixer          Repair and normalize a task before review.

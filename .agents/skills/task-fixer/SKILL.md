@@ -192,8 +192,9 @@ python3 .agents/skills/task-fixer/scripts/vendor_offline_dependencies.py \
 
 ## Required inputs and allowed changes
 
-The target is a single task directory. Confirm the task root before editing and
-work only inside it. A normal task contains:
+For the scaffold's submission layout, the target is the literal `task/`
+directory. It is a fixed outer wrapper, not the task's logical name. Confirm the
+task root before editing and work only inside it. A normal task contains:
 
 - `task.toml`;
 - `instruction.md`;
@@ -226,6 +227,21 @@ build-support files when their contents can be derived from the existing task:
 If a required scientific input, solution/verifier implementation, or dependency
 cannot be derived or supplied from approved local resources, return `FAIL` with
 the exact missing path and remedy instead of inventing it.
+
+Keep the filesystem path and the Harbor identity separate:
+
+- Keep the outer directory named `task/`; the submission package and the skill
+  report target depend on that exact path.
+- Read and, when an in-scope metadata repair is needed, edit the logical name
+  in `[task].name` in `task/task.toml`. The namespace rule applies to that
+  value, not to the directory basename.
+- If an author supplied a task-specific directory name, do not rename it as a
+  metadata fix and do not make the final report target that directory. Restore
+  the content under `task/` before the final fixer and review runs.
+
+During the audit, record both the target path and `[task].name`. Normalize the
+latter only when required by the deployment policy; never change the former to
+satisfy a rubric phrase such as "meaningful task name."
 
 ## Workflow
 

@@ -1,7 +1,6 @@
 ---
 name: trajectory-review
 description: Review the latest Harbor 3-agent trajectory run for a task. Pass when the agents failed because their science or reasoning was wrong. Ignore agent/platform errors and contact failures against external scientific services, and flag as non-genuine any failure where the trajectory shows correct science or a defensible alternative method that the verifier rejected. Require the instruction to name the keys of a required output structure without revealing the method; otherwise do not demand a perfect instruction/verifier contract. Still fail structural task bugs and brittle verifiers. Use when asked for an easier trajectory review, permissive trajectory review, completed_trajectories review, harbor-jobs review, 3x agent run review, pass/fail trajectory review, or whether a task failure is acceptable under a domain-expert standard.
-argument-hint: <task-or-run-path>
 ---
 
 # Trajectory Review
@@ -57,10 +56,44 @@ easy but does not fail the check by itself. Judge whether each failure was
 scientific, non-genuine, structural, or noise; do not convert a low pass rate
 into a task bug on its own.
 
+## Submission paths and exception records
+
+Use the scaffold's fixed roots for the final runs:
+
+- `task-review` and `task-fixer` target `task/`;
+- `trajectory-review` targets `trajectories/` and finds the latest run inside
+  it.
+
+The wrapper's `Target` field is a path contract, not the Harbor task's logical
+identity. Keep `Target | task` for task reviews and `Target | trajectories` for
+this review. The logical identity belongs in `[task].name` in
+`task/task.toml`; cite that file when discussing the task name. Do not rename
+`task/` to a slug and do not point the final wrapper run at a slug-named
+directory. If the task was reviewed under such a directory, restore the
+canonical layout and rerun the relevant skills before submission.
+
+Treat `summary.json` as a per-trial evidence ledger, not as a requirement that
+the exception count be zero. A finished trial may legitimately have
+`verdict: EXCEPTION`, a numeric reward (normally `0`), and archived trajectory
+evidence. Keep that record intact and inspect the trial before classifying it:
+
+- an agent that spent meaningful time on an incorrect scientific path and then
+  hit its timeout is a genuine scientific failure and is compatible with a
+  passing trajectory review;
+- an exception before meaningful task work, such as an agent startup failure,
+  provider failure, or external-service contact failure, is ignored noise;
+- correct science rejected by the verifier is non-genuine.
+
+Do not turn an exception into `PASS`, delete it, or fabricate a zero-exception
+summary merely to satisfy a soft check. Report the exception classification and
+the evidence. The summary still must be internally consistent: every included
+trial needs a finished status, a valid verdict and numeric reward, and any
+trajectory reference must resolve to archived evidence.
+
 ## Inputs
 
 - A set of completed trajectories.
-- Typical completed run layout:
+- The canonical target is `trajectories/`. Typical completed run layout:
   `trajectories/summary.md`, `trajectories/oracle/`, and one direct folder per
   agent such as `trajectories/claude-code/`, `trajectories/codex/`, and
   `trajectories/antigravity/` (the Gemini agent).
