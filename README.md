@@ -628,6 +628,10 @@ Before the required campaign, you can optionally
 `harbor_runner.py` runs this repository's single `task/` directory through an
 Oracle gate (runs your own solve.py and the tests) and then the three configured agent jobs.
 
+```bash
+./harbor_runner.py task
+```
+
 When the remote archive contains agent trial evidence, the runner writes
 `harbor-jobs/<run-id>.summary.json` and `.summary.md`, then replaces the direct
 `trajectories/` contents with whatever Oracle and agent evidence is available,
