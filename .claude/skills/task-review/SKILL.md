@@ -67,7 +67,8 @@ that optional file is absent.
 
 - **Rubric**: `task_implementation.toml` at the repo root. Read every
   `[[criteria]]` entry (`name`, `description`, and `guidance`).
-- **Target**: a Harbor task folder, normally under `task/`. Expected layout:
+- **Target**: the canonical `task/` directory for a submission-ready run.
+  Expected layout:
   - `task.toml`
   - `instruction.md`
   - `environment/` (Dockerfile, data, supporting assets)
@@ -76,6 +77,31 @@ that optional file is absent.
   - optional `README.md`
 
 If the folder doesn't have this layout, stop and report what's missing — do not invent verdicts.
+
+## Canonical path and logical task name
+
+Keep these two names separate:
+
+- `task/` is the fixed outer directory used by the scaffold and the submission
+  package. Do not rename it to make the task look more specific.
+- `[task].name` in `task/task.toml` is the Harbor task's logical identity. Use
+  that value when judging a rubric criterion about the task's name or whether
+  the task is meaningfully identified. Cite `task/task.toml`; do not judge the
+  basename `task` as though it were the logical name.
+
+The rubric's `task_name` row uses the older phrase "task folder name." In this
+scaffold, interpret that row as the descriptive portion of `[task].name` after
+the required namespace prefix (for example, `aligned/kinase-pocket-ranking`:
+judge `kinase-pocket-ranking`). Apply the row's concise kebab-case rules to
+that portion, then repair `[task].name` if needed. Never satisfy this row by
+renaming the outer `task/` directory.
+
+Run the skill from the repository root with the target `task` (the default for
+`scripts/run-task-review.sh`). The wrapper records `Target | task` in the
+report. A report generated with a renamed target such as
+`aligned/my-task` is not submission-ready, even when the files inside it are
+valid. Restore the content under `task/` and rerun the review; do not hand-edit
+the report's target or rename the canonical directory.
 
 ## Procedure
 
@@ -98,6 +124,9 @@ If the folder doesn't have this layout, stop and report what's missing — do no
    dependency-free static check against the repository root. Treat its findings
    as evidence for the existing rubric rows; do not invent a separate
    deployment criterion from a warning.
+   Before scoring any criterion that says "task name" or "task folder name",
+   resolve it against `[task].name` in `task/task.toml`. The literal `task/`
+   wrapper is intentionally not required to have a descriptive basename.
 3. **Audit verifier self-consistency.** Build an assertion inventory before
    scoring. For every assertion that can affect pass/fail, including assertions
    in helpers, fixtures, parametrized cases, and `test.sh`, record its file/line, the
