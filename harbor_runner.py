@@ -679,10 +679,17 @@ def remote_json_request(
         message = str(details.get("message") or f"Workbench Harbor API returned HTTP {error.code}")
         raise RemoteClientError(error.code, code, message[:500], response_headers) from None
     except (urllib.error.URLError, OSError) as error:
+        reason = error.reason if isinstance(error, urllib.error.URLError) else error
+        # Report transport diagnostics without exposing URLs or proxy credentials
+        # that may be embedded in the exception's free-form message.
+        detail = type(reason).__name__
+        if isinstance(reason, OSError) and isinstance(reason.errno, int):
+            detail += f" (errno {reason.errno})"
         raise RemoteClientError(
             0,
             "network",
-            "Could not reach the Workbench Harbor service.",
+            f"Could not reach the Workbench Harbor service: {detail}. "
+            f"Python interpreter: {sys.executable}",
             retryable=True,
         ) from error
 
