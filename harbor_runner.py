@@ -160,7 +160,7 @@ MODAL_PLATFORM = "linux/amd64"
 # Client policy: the Oracle and the agent trials both run with public network.
 DEFAULT_NETWORK_MODE = "public"
 SUPPORTED_NETWORK_MODES = ("public", "no-network")
-MODAL_APP_NAME_PREFIX = "beaker"
+MODAL_APP_NAME_PREFIX = "honeydew"
 MODAL_RUN_MANIFEST_SUFFIX = ".modal-run.json"
 QUICK_AGENT_CHOICES = ("auto", "claude", "claude-code", "codex")
 QUICK_DEFAULT_AGENT_TIMEOUT_SEC = 1800.0
@@ -181,8 +181,8 @@ DEFAULT_RUNS: tuple[tuple[str, str, str, int], ...] = (
     ("codex", "openai/gpt-5.6-sol", "codex-gpt-5-6-sol", DEFAULT_CONCURRENCY),
     (
         "antigravity",
-        "google/gemini-3.6-flash",
-        "gemini-3-6-flash",
+        "google/gemini-3.8-flash",
+        "gemini-3-8-flash",
         DEFAULT_CONCURRENCY,
     ),
 )
@@ -221,7 +221,7 @@ ORACLE_SPINNER_FRAMES = ("|", "/", "-", "\\")
 REMOTE_AGENT_CONFIGS = {
     ("claude-code", "anthropic/claude-opus-5"): "claude-opus",
     ("codex", "openai/gpt-5.6-sol"): "codex-gpt-5-6-sol",
-    ("antigravity", "google/gemini-3.6-flash"): "gemini-flash",
+    ("antigravity", "google/gemini-3.8-flash"): "gemini-3-8-flash",
 }
 REMOTE_EXCLUDED_PARTS = {
     ".git",

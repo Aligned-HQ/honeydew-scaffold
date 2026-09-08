@@ -1,26 +1,25 @@
-# Beaker Task Guidelines
+# Honeydew Task Guidelines
 
 This repository is a starter project for a reproducible scientific-computing task in the terminal-bench style. The files under `task/` contain a placeholder content so the container and verifier wiring can be exercised, all the placeholder content must be replaced with a real scientific task.
 
 This README covers the main authoring path. Supplemental reference guides are
-linked at the end. The same instructions are also available in this
-[Google Document](https://docs.google.com/document/d/1EOXHxE6kHObi7E-NY54DZwdSaDAAzHwqJ9In21nLtGE/edit?usp=sharing).
+linked at the end.
 
-A sample task is provided for reference: [Beaker Sample](https://github.com/Aligned-HQ/beaker-sample)
+For scientific task examples, see the [workflow guide](scientific_workflows.md).
 
 
 ## Motivation and intended flow
 
 These tasks are being created to train and evaluate AI systems on realistic
-scientific workflows in the drug discovery pipeline. A good task captures a
-decision that a researcher could plausibly face in a lab or analysis project,
+computational workflows in mathematics, physical sciences, engineering, and
+earth sciences. A good task captures a decision that a researcher could plausibly face in a lab or analysis project,
 using realistic data, defensible method choices, validation, and a result that
 changes what happens next.
 
 An isolated operation can be scientifically legitimate without being a
 complete workflow. Computing a score, fitting a model, or running a simulation
 often assumes that someone has already selected the right input, state,
-population, or assay and established that the result is fit for its intended
+model, or measurement and established that the result is fit for its intended
 use. Tasks should include the relevant upstream and parallel reasoning. They
 should also ask the agent to interpret uncertainty, reconcile evidence, and
 make a decision such as proceed, stop, rank candidates, redesign, or choose the
@@ -31,8 +30,8 @@ The task also has to test generalization. Be wary of famous targets, datasets, a
 case studies that can reward recall of well-known conclusions instead of work on
 the task inputs. 
 
-For a stage-by-stage catalog of representative work, see
-[Drug discovery pipeline - workflow patterns, task components & tools](drug_discovery_pipeline.md).
+For domain-specific examples of representative work, see
+[Scientific computational workflows](scientific_workflows.md).
 
 There are many files and scripts in this repository meant to help you create your task but you only need to worry about five files:
 
@@ -104,8 +103,8 @@ that out quickly rather than after building a solution and a verifier.
 
 1. **Pick a candidate workflow.** Start with a practitioner and a decision,
    then choose relevant components from
-   [Drug discovery pipeline - workflow patterns, task components & tools](drug_discovery_pipeline.md),
-   in the stage of the pipeline you want to author for. Include any prior or
+   [Scientific computational workflows](scientific_workflows.md),
+   in the scientific domain you want to author for. Include any prior or
    parallel checks whose failure would invalidate the central analysis. 
 2. **Write the prompt.** Draft the scientific question, the inputs the agent
    gets, the decision the result will support, and the outputs it must produce - a first pass at `instruction.md`. Do not include the method, the reference
@@ -134,8 +133,8 @@ that out quickly rather than after building a solution and a verifier.
 Before building the submission, iterate on the task proposal in
 [Aligned Workbench](https://workbench.alignedhq.ai):
 
-1. Open the **Beaker Campaign** queue and claim a task for the area of the drug
-   discovery pipeline your screened workflow belongs to.
+1. Open the **Honeydew Campaign** queue and claim a task in the scientific
+   domain of your screened workflow.
 2. Open the claimed task, paste the task you want to author into the **Task
    proposal** text box, and request a proposal review.
 3. Read the expert feedback, revise the proposal, and request another review.
@@ -147,8 +146,8 @@ Before building the submission, iterate on the task proposal in
 Create a new task project from the scaffold and choose a concise task slug:
 
 ```bash
-git clone https://github.com/Aligned-HQ/beaker-scaffold.git aligned_beaker_task
-cd aligned_beaker_task
+git clone https://github.com/Aligned-HQ/honeydew-scaffold.git aligned_honeydew_task
+cd aligned_honeydew_task
 ```
 
 ## 3. Set up the local authoring toolchain
@@ -215,9 +214,8 @@ If the setup script cannot run on your workstation, see the
 
 Before writing files, name the real practitioner, the decision they face, and
 what they would do differently under the possible results. Each task should
-represent a realistic scientific workflow in the part of the drug discovery
-pipeline you claimed. The work should plausibly take an expert several focused
-hours because of judgment, competing explanations or methods, uncertainty, and
+represent a realistic computational workflow in the scientific domain you
+claimed. The work should plausibly take an expert several focused hours because of judgment, competing explanations or methods, uncertainty, and
 validation, not because of formatting or a large number of routine commands.
 
 The task should have:
@@ -225,8 +223,8 @@ The task should have:
 - a concrete research objective, a meaningful audience, and a downstream
   decision;
 - public or vendored inputs that are realistic enough to support that objective;
-- any input, state, construct, cohort, or assay triage needed to establish that
-  the central analysis is fit for purpose;
+- any input, model, boundary-condition, or measurement assessment needed to
+  establish that the central analysis is fit for purpose;
 - several plausible approaches or explanations, with intermediate observations
   that can change later choices;
 - validation focused on the region, subgroup, operating range, or property that
@@ -239,40 +237,32 @@ The task should have:
 - at least one substantive machine-checkable output;
 - a deterministic or explicitly controlled evaluation that does not depend on a live service.
 
-Terms such as "tractability" or "developability" often have different
-definitions across organizations and programs. Do not grade an agent against
-an unstated house definition. Supply the relevant TPP, modality, rubric, and
-thresholds when the output must match a category. If constructing the decision
-framework is the scientific work, verify the underlying evidence, calculations,
-and consistency instead of requiring one hidden label.
+Terms such as "stability", "convergence", or "acceptable risk" need definitions
+that match the scientific context. Supply the relevant operating conditions,
+rubric, and thresholds for required categories. If the decision framework is
+part of the task, check its evidence, calculations, and consistency.
 
-For protein-centered work, target choice is part of task design. If the target
-is famous enough that its mechanism, structure, or standard experimental
-conclusion is common knowledge, prefer a less-canonical target or include a
-matched control elsewhere in the campaign. The control needs comparable data
-quality; an obscure protein with no usable evidence is merely underspecified.
-Do not rely on renamed identifiers as a memorization control. Build the answer
-around calculations and task-specific measurements that must be derived from
-the supplied inputs.
+Choose problems that require calculations from the supplied inputs. Famous
+systems and standard datasets can reward recall of known conclusions.
+Use comparable data quality across cases. Renamed identifiers alone do not
+prevent memorization.
 
-State which protein regime makes the workflow interesting. A stable monomer,
-an obligate multimer, an intrinsically disordered protein, and an
-aggregation-prone construct cannot all be graded as if each had one reliable
-static structure. The task should make that distinction consequential. It may
-ask the agent to choose an assembly, use an ensemble, reject a predicted region,
-or change the experimental design. Across a campaign, reviewers should look
-for coverage of these different regimes rather than many versions of the same
-well-behaved target.
+Make the scientific regime consequential. A steady flow, a turbulent flow,
+and a transient multiphase flow require different assumptions and evidence.
+Comparable distinctions include well-conditioned versus ill-conditioned inverse
+problems, elastic versus inelastic materials, and stationary versus changing
+climate records. If the initial assumptions fail, require a different model,
+a restricted operating range, or additional observations.
 
-Not every task has to cover an entire discovery program. It does need the
+Not every task has to cover an entire research program. It does need the
 upstream and parallel work without which its central result could be
 misapplied. If those preconditions have already been established, state them
 in the supplied context. A single operation is enough only when that operation
 is itself the meaningful decision bottleneck.
 
 The parts of the workflow should form a causal chain. For example, a quality
-audit may rule out one model, a state comparison may change the site used for
-analysis, or conflicting assays may change which candidate advances. Simply
+audit may rule out one model, a convergence study may change the mesh used for
+analysis, or conflicting measurements may change the proposed design. Simply
 concatenating independent analyses creates more work but not more scientific
 depth.
 
@@ -330,7 +320,7 @@ puts them.
 
 1. What scientific question and practitioner decision are being addressed?
 2. Which input files are available at absolute paths, and what are their formats, units, and important columns or dimensions?
-3. Which biological, experimental, or operational context and constraints matter?
+3. Which mathematical, physical, experimental, or operational context and constraints matter?
 4. Which exact output paths and schemas must be produced? If the verifier checks
    a decision, supporting measurement, quality flag, or uncertainty field, it
    must be specified here.
@@ -342,8 +332,8 @@ of the task, prescribed library calls, hidden thresholds, feature-engineering
 recipes, or instructions to reproduce the reference solution. 
 
 Name the shape, not the method. The agent cannot guess a key you never wrote
-down, so list them; but a key like `docking_score_vina_exhaustiveness_16` hands
-over the approach, while `binding_affinity_kcal_per_mol` just says what to
+down, so list them; but a key like `poisson_cg_jacobi_100_iterations` hands
+over the approach, while `potential_energy_j` just says what to
 report. Structure that leaks the method makes the task easier than you think it
 is.
 
@@ -499,8 +489,8 @@ The three explanation fields have different jobs:
 
 - `difficulty_explanation` names the scientific decision bottleneck, the
   connected judgments that make it hard for an expert, how realistic the data
-  are, and who would do the work. For protein-centered tasks, it should also
-  explain the target choice and any class-specific challenge;
+  are, and who would do the work. Explain the system choice and any
+  challenge specific to its scientific regime;
 - `solution_explanation` summarizes the reference strategy and key insights without pretending that a different implementation was used;
 - `verification_explanation` describes every substantive check and justifies numeric bounds or tolerances, including evidence that alternative correct approaches fit.
 
@@ -559,8 +549,8 @@ evidence. Pay particular attention to:
 - practitioner plausibility and real scientific value;
 - a connected practitioner decision, including fit-for-purpose input or state
   selection and application-specific validation;
-- target choices that test the supplied evidence rather than canonical recall,
-  with protein representations suited to the structural regime;
+- system choices that require analysis of supplied evidence,
+  with models suited to the scientific regime;
 - the task difficulty and tool usage/agent behavior;
 - a concise prompt with no solution recipe;
 - actual computation in the reference solution;
@@ -628,6 +618,12 @@ Before the required campaign, you can optionally
 `harbor_runner.py` runs this repository's single `task/` directory through an
 Oracle gate (runs your own solve.py and the tests) and then the three configured agent jobs.
 
+Honeydew selects Gemini 3.8 Flash for the Antigravity run. Remote requests use
+agent ID `gemini-3-8-flash` with model `google/gemini-3.8-flash`.
+Workbench must deploy this approved configuration in both the Harbor API and
+executor before accepting these requests. The executor uses medium reasoning
+effort through `google/gemini-3.8-flash-medium`.
+
 ```bash
 ./harbor_runner.py task
 ```
@@ -672,24 +668,7 @@ warning that the task may be too easy, but is not a failure by itself. Rerun
 the fixer, review, smoke test, Harbor campaign, and trajectory review after
 changing the task.
 
-## 11. Run strict scaffold validation
-
-Run the final strict static check after the trajectory review:
-
-```bash
-python3 scripts/validate_scaffold.py --strict
-```
-Resolve every failure before handoff.
-
-The static validator checks that the estimate is finite and positive and detects
-common undeclared CUDA/GPU and parallel-worker requirements. It does not try to
-infer scientific difficulty from line counts or impose a heuristic duration.
-During task-review, assess `metadata.expert_time_estimate_hours` from the
-scientific scope and reference workflow. Keep any model/agent timing separate;
-use it only for agent timeout behavior, infrastructure diagnosis, and
-reproducibility, never as a proxy for human duration.
-
-## 12. Verify the final handoff
+## 11. Verify the final handoff
 
 Before uploading, verify the skill reports and status:
 
@@ -699,11 +678,10 @@ Before uploading, verify the skill reports and status:
   --trajectory trajectories
 ```
 
-Confirm that the reports, trajectories, and strict scaffold validation are
-complete. The final packaging step below is the point at which the upload
-bundle is assembled.
+Confirm that the reports and trajectories are complete. The final packaging
+step assembles the upload bundle.
 
-## 13. Create the submission folder and upload it
+## 12. Create the submission folder and upload it
 
 Run `package-submission` as the last local authoring step. It creates a
 `submission/` directory containing the task, trajectories, and skill reports:

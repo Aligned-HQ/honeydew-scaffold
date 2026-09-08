@@ -120,10 +120,6 @@ the report's target or rename the canonical directory.
      already exist
    - `README.md` if present
    Read whole files when they're small enough; for larger files, read the sections needed to evaluate each criterion. Do not delegate this to a subagent if you can read the files directly — you need the contents in scope to cite line numbers.
-   If the repository provides `scripts/validate_scaffold.py`, run its
-   dependency-free static check against the repository root. Treat its findings
-   as evidence for the existing rubric rows; do not invent a separate
-   deployment criterion from a warning.
    Before scoring any criterion that says "task name" or "task folder name",
    resolve it against `[task].name` in `task/task.toml`. The literal `task/`
    wrapper is intentionally not required to have a descriptive basename.

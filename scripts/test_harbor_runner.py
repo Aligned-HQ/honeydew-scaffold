@@ -19,7 +19,7 @@ import harbor_runner
 
 
 def check_run_identity() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-runner-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-runner-test-") as raw:
         jobs_dir = Path(raw) / "jobs"
         manifest, app_name = harbor_runner.resolve_modal_run_identity(
             jobs_dir,
@@ -29,7 +29,7 @@ def check_run_identity() -> None:
             dry_run=False,
         )
         assert manifest.is_file()
-        assert app_name.startswith("beaker-same-run-")
+        assert app_name.startswith("honeydew-same-run-")
         assert len(app_name) <= 64
 
         try:
@@ -74,17 +74,17 @@ def check_cleanup_is_targeted() -> None:
     harbor_runner.stop_modal_app_via_sdk = lambda app_name: sdk_calls.append(app_name) or True
     harbor_runner.SHUTDOWN_MODAL_COMPLETED = False
     try:
-        harbor_runner.shutdown_modal_app(True, "beaker-owned-run")
+        harbor_runner.shutdown_modal_app(True, "honeydew-owned-run")
     finally:
         harbor_runner.stop_modal_app_via_cli = original_stop
         harbor_runner.stop_modal_app_via_sdk = original_sdk_stop
         harbor_runner.SHUTDOWN_MODAL_COMPLETED = original_completed
-    assert cli_calls == ["beaker-owned-run"]
-    assert sdk_calls == ["beaker-owned-run"]
+    assert cli_calls == ["honeydew-owned-run"]
+    assert sdk_calls == ["honeydew-owned-run"]
 
 
 def check_jobs_dir_is_cleared_for_new_runs() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-jobs-cleanup-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-jobs-cleanup-test-") as raw:
         jobs_dir = Path(raw) / "harbor-jobs"
         jobs_dir.mkdir()
         (jobs_dir / "old-run.log").write_text("old", encoding="utf-8")
@@ -100,7 +100,7 @@ def check_jobs_dir_is_cleared_for_new_runs() -> None:
 
 
 def check_snapshot_results_map_to_original_task() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-archive-mapping-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-archive-mapping-test-") as raw:
         root = Path(raw)
         original_task = root / "task"
         original_task.mkdir()
@@ -141,7 +141,7 @@ def check_snapshot_results_map_to_original_task() -> None:
 
 
 def check_successful_archive_uses_agent_names_and_oracle() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-trajectory-archive-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-trajectory-archive-test-") as raw:
         # Resolve first: archive_completed_task_runs() returns resolved paths, and on
         # macOS the temp root is under the /var -> /private/var symlink.
         root = Path(raw).resolve()
@@ -155,7 +155,7 @@ def check_successful_archive_uses_agent_names_and_oracle() -> None:
         agent_specs = [
             ("claude-code", "claude-opus", "anthropic/claude-opus-5"),
             ("codex", "codex-gpt-5-6-sol", "openai/gpt-5.6-sol"),
-            ("antigravity", "gemini-3-6-flash", "google/gemini-3.6-flash"),
+            ("antigravity", "gemini-3-8-flash", "google/gemini-3.8-flash"),
         ]
         results = []
         for agent, label, model in agent_specs:
@@ -267,7 +267,7 @@ def check_successful_archive_uses_agent_names_and_oracle() -> None:
 
 
 def check_remote_archive_promotion_uses_direct_layout() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-archive-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-archive-test-") as raw:
         root = Path(raw)
         destination = root / "trajectories"
         archive = destination / "hr_remote-run"
@@ -291,7 +291,7 @@ def check_remote_archive_promotion_uses_direct_layout() -> None:
 
 
 def check_remote_partial_archive_matches_local_layout() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-partial-archive-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-partial-archive-test-") as raw:
         root = Path(raw)
         destination = root / "trajectories"
         archive = destination / "hr_remote-run"
@@ -327,7 +327,7 @@ def check_remote_partial_archive_matches_local_layout() -> None:
 
 
 def check_remote_oracle_exception_evidence_is_preserved() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-oracle-exception-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-oracle-exception-test-") as raw:
         root = Path(raw)
         destination = root / "trajectories"
         archive = destination / "hr_remote-run"
@@ -368,7 +368,7 @@ def check_remote_error_without_agent_trials_keeps_compact_evidence() -> None:
         "trials": [],
     }
     assert harbor_runner.remote_error_has_no_agent_trials(status, results)
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-error-evidence-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-error-evidence-test-") as raw:
         destination = harbor_runner.write_remote_error_evidence(
             Path(raw) / "trajectories",
             "hr_remote-error",
@@ -389,7 +389,7 @@ def check_remote_error_without_agent_trials_keeps_compact_evidence() -> None:
 
 def check_remote_archive_extracts_evidence_without_task_files() -> None:
     run_id = "hr_remote-extract"
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-evidence-extract-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-evidence-extract-test-") as raw:
         root = Path(raw)
         source = root / run_id
         task_root = source / "example-task"
@@ -470,7 +470,7 @@ def check_remote_archive_flag_matches_local_behavior() -> None:
     original_poll = harbor_runner.poll_remote_status
     requests: list[str] = []
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-no-archive-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-no-archive-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -544,7 +544,7 @@ def check_remote_archive_flag_matches_local_behavior() -> None:
 def check_remote_start_error_preserves_service_message() -> None:
     original_request = harbor_runner.remote_json_request
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-start-error-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-start-error-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -619,7 +619,7 @@ def check_remote_oracle_exception_downloads_archive() -> None:
     original_download = harbor_runner.download_remote_archive
     requests: list[str] = []
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-oracle-run-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-oracle-run-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -728,7 +728,7 @@ def check_remote_agent_exception_replaces_direct_archive() -> None:
     original_poll = harbor_runner.poll_remote_status
     original_download = harbor_runner.download_remote_archive
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-agent-exception-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-agent-exception-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -852,7 +852,7 @@ def check_remote_service_error_skips_archive_download() -> None:
     original_poll = harbor_runner.poll_remote_status
     requests: list[str] = []
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-service-error-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-service-error-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -967,7 +967,7 @@ def check_public_network_snapshots() -> None:
     original_sleep = harbor_runner.time.sleep
     harbor_runner.time.sleep = lambda _seconds: None
     try:
-        with tempfile.TemporaryDirectory(prefix="beaker-snapshot-test-") as raw:
+        with tempfile.TemporaryDirectory(prefix="honeydew-snapshot-test-") as raw:
             jobs_dir = Path(raw) / "jobs"
             oracle = harbor_runner.snapshot_task_root(
                 task_root,
@@ -1012,15 +1012,15 @@ def check_agent_progress_order() -> None:
     specs = [
         SimpleNamespace(job_name="claude", label="claude-opus-5"),
         SimpleNamespace(job_name="codex", label="codex-gpt-5-6-sol"),
-        SimpleNamespace(job_name="gemini", label="gemini-3-6-flash"),
+        SimpleNamespace(job_name="gemini", label="gemini-3-8-flash"),
     ]
     output = io.StringIO()
     reporter = harbor_runner.ProgressReporter(specs, output)
     reporter.report(specs[2], "gemini update")
     block = output.getvalue().split("=============", 1)[0]
     assert block.index("claude-opus-5:") < block.index("codex-gpt-5-6-sol:")
-    assert block.index("codex-gpt-5-6-sol:") < block.index("gemini-3-6-flash:")
-    assert "gemini-3-6-flash: gemini update" in block
+    assert block.index("codex-gpt-5-6-sol:") < block.index("gemini-3-8-flash:")
+    assert "gemini-3-8-flash: gemini update" in block
 
 
 def check_remote_defaults_load_dotenv() -> None:
@@ -1031,7 +1031,7 @@ def check_remote_defaults_load_dotenv() -> None:
     original_run_remote = harbor_runner.run_remote
     seen: dict[str, object] = {}
 
-    with tempfile.TemporaryDirectory(prefix="beaker-dotenv-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-dotenv-test-") as raw:
         root = Path(raw)
         task_root = root / "task"
         task_root.mkdir()
@@ -1089,6 +1089,9 @@ def check_remote_bundle_wiring() -> None:
 def check_remote_policy_wiring() -> None:
     args = SimpleNamespace(run=[], n_concurrent=5, default_concurrency=3, repeats=2)
     payload = harbor_runner.remote_agent_payload(args)
+    gemini = next(item for item in payload if item["id"] == "gemini-3-8-flash")
+    assert gemini["agent"] == "antigravity"
+    assert gemini["model"] == "google/gemini-3.8-flash"
     assert all(item["concurrency"] == 5 for item in payload)
     assert sum(item["concurrency"] for item in payload) * args.repeats == 30
     execution = harbor_runner.remote_execution_payload(
@@ -1152,7 +1155,7 @@ def check_remote_progress_reporting() -> None:
                 "exception_count": 0,
             },
             {
-                "id": "gemini-flash",
+                "id": "gemini-3-8-flash",
                 "agent": "antigravity",
                 "state": "QUEUED",
                 "expected_trials": 3,
@@ -1237,7 +1240,7 @@ def check_remote_poll_retries_network_error() -> None:
             )
         return 200, {"state": "COMPLETE", "terminal_reason": "AGENTS_COMPLETE"}, {}
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-poll-retry-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-poll-retry-test-") as raw:
         state_path = Path(raw) / "service-run.json"
         harbor_runner.remote_json_request = fake_remote_json_request  # type: ignore[assignment]
         harbor_runner.time.sleep = lambda _seconds: None
@@ -1314,7 +1317,7 @@ def check_remote_archive_retries_network_error() -> None:
     original_sleep = harbor_runner.time.sleep
     attempts = 0
 
-    with tempfile.TemporaryDirectory(prefix="beaker-remote-archive-retry-test-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-remote-archive-retry-test-") as raw:
         destination = Path(raw) / "hr_retry-test"
         destination.mkdir()
 
@@ -1479,7 +1482,7 @@ def check_quick_agent_resolution_and_commands() -> None:
 
 
 def check_quick_workspace_is_public_only() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-quick-stage-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-quick-stage-") as raw:
         task = make_quick_task(Path(raw))
         workspace = Path(raw) / "workspace"
         harbor_runner.stage_quick_workspace(task, workspace)
@@ -1495,7 +1498,7 @@ def check_quick_mode_runs_host_cli_and_local_verifier() -> None:
         def isatty(self) -> bool:
             return True
 
-    with tempfile.TemporaryDirectory(prefix="beaker-quick-run-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-quick-run-") as raw:
         root = Path(raw)
         task = make_quick_task(root)
         bin_dir = root / "bin"

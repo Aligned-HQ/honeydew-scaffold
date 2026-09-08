@@ -121,7 +121,7 @@ install_hint() {
     fi
 }
 
-printf 'Beaker authoring environment setup\n'
+printf 'Honeydew authoring environment setup\n'
 printf 'Repository: %s\n' "$REPO_ROOT"
 
 # ---------------------------------------------------------------------------

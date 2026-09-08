@@ -6,6 +6,7 @@ This is the file-level reference for the
 ```text
 .
 ├── README.md                         # main authoring path
+├── scientific_workflows.md           # domain coverage and upstream task examples
 ├── harbor_runner.py                  # Docker smoke test and isolated Harbor runner
 ├── task_implementation.toml          # rubric consumed by task-review
 ├── docs/                             # supplemental authoring references
@@ -18,7 +19,6 @@ This is the file-level reference for the
 ├── scripts/
 │   ├── setup.sh                      # create the .venv, install deps, then check
 │   ├── check-setup.sh                # local toolchain and Docker check
-│   ├── validate_scaffold.py          # fast static contract check
 │   ├── test_harbor_runner.py         # runner isolation regression checks
 │   ├── test_package_submission.py    # trajectory packaging regression checks
 │   ├── run-skill.sh                  # shared agent-skill runner

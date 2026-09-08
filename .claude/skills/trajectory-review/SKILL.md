@@ -248,8 +248,8 @@ trajectory reference must resolve to archived evidence.
      headers, and the units. Those are the shape of the answer, and an agent
      cannot infer a spelling nobody gave it.
    - The structure must not give away the method. Keys should name what is
-     reported, not how to compute it: `binding_affinity_kcal_per_mol` is a
-     result, `docking_score_vina_exhaustiveness_16` is a recipe. If the schema
+     reported, not how to compute it: `potential_energy_j` is a
+     result, `poisson_cg_jacobi_100_iterations` is a recipe. If the schema
      hands the agent the approach, report it as an advisory difficulty risk —
      the task may be too easy — but do not fail the review over it.
    - Stop there. Do not recommend that `instruction.md` or the verifier be

@@ -69,7 +69,7 @@ def run_checker(root: Path) -> subprocess.CompletedProcess[str]:
 
 
 def check_checker_uses_trajectories() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-trajectory-check-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-trajectory-check-") as raw:
         root = Path(raw)
         make_fixture(
             root,
@@ -86,7 +86,7 @@ def check_checker_uses_trajectories() -> None:
 
 
 def check_high_average_is_advisory_at_the_failure_gate() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-pass-rate-warning-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-pass-rate-warning-") as raw:
         root = Path(raw)
         make_fixture(
             root,
@@ -104,7 +104,7 @@ def check_high_average_is_advisory_at_the_failure_gate() -> None:
 
 
 def check_packaging_reports_hard_failure_but_continues() -> None:
-    with tempfile.TemporaryDirectory(prefix="beaker-package-submission-") as raw:
+    with tempfile.TemporaryDirectory(prefix="honeydew-package-submission-") as raw:
         root = Path(raw)
         make_fixture(
             root,

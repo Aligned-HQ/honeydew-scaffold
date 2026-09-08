@@ -178,7 +178,7 @@ with `python -m pip install --no-cache-dir --no-index --find-links=/opt/wheels -
 runtime execution. Prefer a builder stage when the wheelhouse is large so it
 does not remain in the final image, then rebuild and measure the image.
 Always include the wheelhouse in the task submission and rerun the helper's
-`--verify` mode plus the strict scaffold checks after changing it.
+`--verify` mode after changing it.
 
 If an approved wheel directory already exists on the authoring host, use it
 without an index:
@@ -379,11 +379,9 @@ satisfy a rubric phrase such as "meaningful task name."
    unrelated repository content. If a referenced input is unavailable, report
    its exact expected path instead of fabricating it.
 
-5. **Repair strict scaffold prerequisites.**
+5. **Repair task environment prerequisites.**
 
-   Locate the project root and run its static validator when available, for
-   example `python3 scripts/validate_scaffold.py --root <project-root>
-   --strict`. Fix every in-scope error before treating the task as blocked:
+   Inspect the task files and fix in-scope environment errors:
 
    - do not create `task/README.md` solely to satisfy scaffold compliance; it is
      optional reviewer context;
@@ -396,10 +394,10 @@ satisfy a rubric phrase such as "meaningful task name."
    - remove networked dependency setup when it is replaceable by an approved
      local base or dependency bundle.
 
-   Run the strict validator again after these repairs. A missing implementation,
-   missing scientific input, unavailable approved dependency, or error that
+   A missing implementation, missing scientific input, unavailable approved
+   dependency, or error that
    would require changing instruction/solution/test contents remains a blocker.
-   Do not create empty files merely to silence a validator.
+   Do not create empty files as substitutes for required content.
 
 6. **Check Oracle prerequisites without running the task.**
 

@@ -57,7 +57,6 @@ into the runtime image.
 From the repository root:
 
 ```bash
-python3 scripts/validate_scaffold.py
 ./harbor_runner.py task --no-remote --smoke-test
 ```
 

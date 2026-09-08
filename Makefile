@@ -1,16 +1,10 @@
-.PHONY: setup setup-check check check-strict runner-test run-smoke run-harbor run-task-fixer run-task-review run-trajectory-review verify-skill-runs
+.PHONY: setup setup-check runner-test run-smoke run-harbor run-task-fixer run-task-review run-trajectory-review verify-skill-runs
 
 setup:
 	./scripts/setup.sh $(ARGS)
 
 setup-check:
 	./scripts/check-setup.sh $(ARGS)
-
-check:
-	python3 scripts/validate_scaffold.py
-
-check-strict:
-	python3 scripts/validate_scaffold.py --strict
 
 runner-test:
 	PYTHONDONTWRITEBYTECODE=1 python3 scripts/test_harbor_runner.py

@@ -124,7 +124,7 @@ check_required_command() {
     fi
 }
 
-printf 'Beaker task authoring setup\n'
+printf 'Honeydew task authoring setup\n'
 printf 'Repository: %s\n\n' "$REPO_ROOT"
 
 check_required_command bash "Shell" "Install a working bash shell."
