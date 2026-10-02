@@ -154,7 +154,7 @@ def check_successful_archive_uses_agent_names_and_oracle() -> None:
         oracle_snapshot = jobs_dir / f"{run_id}.oracle-task-snapshot"
         agent_specs = [
             ("claude-code", "claude-opus", "anthropic/claude-opus-5"),
-            ("codex", "codex-gpt-5-6-sol", "openai/gpt-5.6-sol"),
+            ("codex", "codex-gpt-6-astra", "openai/gpt-6-astra"),
             ("antigravity", "gemini-3-8-flash", "google/gemini-3.8-flash"),
         ]
         results = []
@@ -762,7 +762,7 @@ def check_remote_agent_exception_replaces_direct_archive() -> None:
                     },
                     "trials": [
                         {
-                            "agent_id": "codex-gpt-5-6-sol",
+                            "agent_id": "codex-gpt-6-astra",
                             "verdict": "EXCEPTION",
                             "exception": {
                                 "type": "HarborProcessError",
@@ -1011,15 +1011,15 @@ def check_oracle_spinner() -> None:
 def check_agent_progress_order() -> None:
     specs = [
         SimpleNamespace(job_name="claude", label="claude-opus-5"),
-        SimpleNamespace(job_name="codex", label="codex-gpt-5-6-sol"),
+        SimpleNamespace(job_name="codex", label="codex-gpt-6-astra"),
         SimpleNamespace(job_name="gemini", label="gemini-3-8-flash"),
     ]
     output = io.StringIO()
     reporter = harbor_runner.ProgressReporter(specs, output)
     reporter.report(specs[2], "gemini update")
     block = output.getvalue().split("=============", 1)[0]
-    assert block.index("claude-opus-5:") < block.index("codex-gpt-5-6-sol:")
-    assert block.index("codex-gpt-5-6-sol:") < block.index("gemini-3-8-flash:")
+    assert block.index("claude-opus-5:") < block.index("codex-gpt-6-astra:")
+    assert block.index("codex-gpt-6-astra:") < block.index("gemini-3-8-flash:")
     assert "gemini-3-8-flash: gemini update" in block
 
 
@@ -1145,7 +1145,7 @@ def check_remote_progress_reporting() -> None:
                 "job_id": "hr_abc-claude-opus",
             },
             {
-                "id": "codex-gpt-5-6-sol",
+                "id": "codex-gpt-6-astra",
                 "agent": "codex",
                 "state": "QUEUED",
                 "expected_trials": 3,
@@ -1582,6 +1582,30 @@ def check_quick_mode_runs_host_cli_and_local_verifier() -> None:
         assert (trajectories_dir / "quick" / "quick-fixture" / "claude").is_dir()
 
 
+def check_remote_summary_merges_models_of_one_agent() -> None:
+    with tempfile.TemporaryDirectory(prefix="honeydew-runner-test-") as raw:
+        destination = Path(raw)
+        harbor_runner.write_remote_results_summary(
+            destination,
+            "hr_123",
+            "example-task",
+            "COMPLETE",
+            {
+                "oracle": {"verdict": "PASS", "reward": 1},
+                "trials": [
+                    {"agent_id": "codex-gpt-5-6-sol", "verdict": "PASS", "reward": 1},
+                    {"agent_id": "codex-gpt-6-astra", "verdict": "FAIL", "reward": 0},
+                    {"agent_id": "codex-gpt-7-unknown", "verdict": "FAIL", "reward": 0},
+                ],
+            },
+            ("claude-opus", "codex-gpt-6-astra", "gemini-3-8-flash"),
+        )
+        header = (destination / "summary.md").read_text(encoding="utf-8").splitlines()[2]
+        assert header == "| Task | Oracle | claude-code | codex | antigravity | Status |", header
+        row = (destination / "summary.md").read_text(encoding="utf-8").splitlines()[4]
+        assert "| 1/3 pass," in row, row
+
+
 if __name__ == "__main__":
     check_run_identity()
     check_names_are_valid_and_unique()
@@ -1610,6 +1634,7 @@ if __name__ == "__main__":
     check_remote_policy_wiring()
     check_default_remote_trial_count()
     check_remote_progress_reporting()
+    check_remote_summary_merges_models_of_one_agent()
     check_remote_poll_retries_network_error()
     check_remote_request_retries_network_error()
     check_remote_archive_retries_network_error()

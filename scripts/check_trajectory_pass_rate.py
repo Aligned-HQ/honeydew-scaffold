@@ -61,12 +61,12 @@ def classify(value: object) -> str | None:
     return None
 
 
-def parse_count(value: str, source: str) -> Counts:
+def parse_count(value: str, source: str, allow_empty: bool = False) -> Counts:
     match = COUNT_RE.match(value)
     if match is None:
         raise PassRateError(f"{source} has an invalid pass count: {value!r}")
     passed, trials = (int(match.group(index)) for index in (1, 2))
-    if trials < 1 or passed > trials:
+    if trials < (0 if allow_empty else 1) or passed > trials:
         raise PassRateError(f"{source} has an invalid pass count: {value!r}")
     return Counts(passed, trials)
 
@@ -79,7 +79,9 @@ def parse_markdown_summary(path: Path) -> dict[str, Counts]:
 
     lines = text.splitlines()
     header_index: int | None = None
-    columns: dict[str, int] = {}
+    # One agent may have several columns, one per model (for example two Codex
+    # models after a model rollover); their counts are summed.
+    columns: dict[str, list[int]] = {}
     for index, line in enumerate(lines):
         cells = table_cells(line)
         if cells is None or len(cells) < 2:
@@ -90,9 +92,7 @@ def parse_markdown_summary(path: Path) -> dict[str, Counts]:
         for column, cell in enumerate(cells[2:], 2):
             agent = classify(cell)
             if agent in AGENTS:
-                if agent in columns:
-                    raise PassRateError(f"summary has duplicate {agent} columns")
-                columns[agent] = column
+                columns.setdefault(agent, []).append(column)
         break
 
     if header_index is None:
@@ -107,19 +107,22 @@ def parse_markdown_summary(path: Path) -> dict[str, Counts]:
     rows = 0
     for line in lines[header_index + 1 :]:
         cells = table_cells(line)
-        if cells is None or len(cells) <= max(columns.values()):
+        if cells is None or len(cells) <= max(max(found) for found in columns.values()):
             continue
         task_cell = cells[0].strip()
         oracle_cell = cells[1].strip()
         if not task_cell or task_cell == "---" or not oracle_cell:
             continue
         rows += 1
-        for agent, column in columns.items():
-            counts = parse_count(
-                cells[column], f"summary {agent} pass count for task {task_cell!r}"
-            )
-            totals[agent][0] += counts.passed
-            totals[agent][1] += counts.trials
+        for agent, agent_columns in columns.items():
+            for column in agent_columns:
+                counts = parse_count(
+                    cells[column],
+                    f"summary {agent} pass count for task {task_cell!r}",
+                    allow_empty=len(agent_columns) > 1,
+                )
+                totals[agent][0] += counts.passed
+                totals[agent][1] += counts.trials
 
     if not rows or any(trials == 0 for _, trials in totals.values()):
         raise PassRateError("summary.md does not contain complete agent pass counts")

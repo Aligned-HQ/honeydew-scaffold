@@ -137,8 +137,35 @@ def check_packaging_reports_hard_failure_but_continues() -> None:
         assert not (root / "harbor-jobs").exists()
 
 
+def check_summary_merges_duplicate_model_columns() -> None:
+    """Two Codex models (e.g. GPT-5.6-Sol and GPT-6-Astra) share one agent total."""
+    with tempfile.TemporaryDirectory(prefix="honeydew-package-submission-") as raw:
+        trajectories = Path(raw) / "trajectories"
+        trajectories.mkdir()
+        (trajectories / "summary.md").write_text(
+            "| Task | Oracle | claude-code | codex | codex-gpt-6-astra | antigravity | Status |\n"
+            "| --- | --- | --- | --- | --- | --- | --- |\n"
+            "| example | pass, reward 1 | 1/4 pass | 0/0 pass | 2/4 pass | 0/4 pass | complete |\n",
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [
+                "python3",
+                str(SCRIPT_DIR / "check_trajectory_pass_rate.py"),
+                "--trajectories",
+                str(trajectories),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert "Codex 2/4" in result.stdout, result.stdout
+
+
 if __name__ == "__main__":
     check_checker_uses_trajectories()
     check_high_average_is_advisory_at_the_failure_gate()
     check_packaging_reports_hard_failure_but_continues()
+    check_summary_merges_duplicate_model_columns()
     print("Submission packaging checks passed")

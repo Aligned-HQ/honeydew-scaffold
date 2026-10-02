@@ -45,7 +45,7 @@ Examples:
     # Override agents / concurrency:
     ./harbor_runner.py ./task \\
         --run claude-code:anthropic/claude-opus-5:claude:3 \\
-        --run codex:openai/gpt-5.6-sol:codex:3
+        --run codex:openai/gpt-6-astra:codex:3
 
 API credentials should be supplied to Modal with named secrets, for example
 `--modal-secret openai-api-key`. Secret values are never written by this
@@ -178,7 +178,7 @@ DOCKERFILE_FROM_RE = re.compile(
 # per-model exception.
 DEFAULT_RUNS: tuple[tuple[str, str, str, int], ...] = (
     ("claude-code", "anthropic/claude-opus-5", "claude-opus-5", DEFAULT_CONCURRENCY),
-    ("codex", "openai/gpt-5.6-sol", "codex-gpt-5-6-sol", DEFAULT_CONCURRENCY),
+    ("codex", "openai/gpt-6-astra", "codex-gpt-6-astra", DEFAULT_CONCURRENCY),
     (
         "antigravity",
         "google/gemini-3.8-flash",
@@ -220,6 +220,8 @@ LOCAL_DEFAULT_PROGRESS_INTERVAL_SECONDS = 30.0
 ORACLE_SPINNER_FRAMES = ("|", "/", "-", "\\")
 REMOTE_AGENT_CONFIGS = {
     ("claude-code", "anthropic/claude-opus-5"): "claude-opus",
+    ("codex", "openai/gpt-6-astra"): "codex-gpt-6-astra",
+    # Previous Codex request signature; the server rewrites it to Astra.
     ("codex", "openai/gpt-5.6-sol"): "codex-gpt-5-6-sol",
     ("antigravity", "google/gemini-3.8-flash"): "gemini-3-8-flash",
 }
@@ -2316,6 +2318,12 @@ def remote_agent_name(agent_id: str) -> str:
     for (agent, _model), known_id in REMOTE_AGENT_CONFIGS.items():
         if known_id == agent_id:
             return agent
+    # The server may report a model id this client does not know yet (for
+    # example after a model rollover); fall back to the agent prefix so every
+    # model of one agent shares a single summary column.
+    for agent in REMOTE_AGENT_DISPLAY_NAMES:
+        if agent_id == agent or agent_id.startswith(f"{agent}-"):
+            return agent
     return agent_id
 
 
@@ -2358,17 +2366,31 @@ def write_remote_results_summary(
 
     ordered_ids = list(agent_order)
     ordered_ids.extend(agent_id for agent_id in sorted(by_agent) if agent_id not in agent_order)
+    # Merge model ids that belong to the same agent (e.g. two Codex models) into
+    # one column; the submission check rejects duplicate agent columns.
+    by_name: dict[str, dict[str, object]] = {}
+    for agent_id in ordered_ids:
+        stats = by_agent[agent_id]
+        merged = by_name.setdefault(
+            remote_agent_name(agent_id),
+            {"finished": 0, "passed": 0, "failed": 0, "exceptions": 0, "rewards": []},
+        )
+        for key in ("finished", "passed", "failed", "exceptions"):
+            merged[key] = int(merged[key]) + int(stats[key])
+        merged_rewards = merged["rewards"]
+        stats_rewards = stats["rewards"]
+        assert isinstance(merged_rewards, list) and isinstance(stats_rewards, list)
+        merged_rewards.extend(stats_rewards)
     oracle = results.get("oracle") if isinstance(results.get("oracle"), dict) else {}
     oracle_verdict = str(oracle.get("verdict") or "INCOMPLETE").lower()
     oracle_reward = oracle.get("reward")
     oracle_reward_text = format_metric(float(oracle_reward)) if isinstance(oracle_reward, (int, float)) else "-"
     oracle_cell = f"{oracle_verdict}, reward {oracle_reward_text}"
 
-    headers = ["Task", "Oracle", *(remote_agent_name(agent_id) for agent_id in ordered_ids), "Status"]
+    headers = ["Task", "Oracle", *by_name, "Status"]
     separator = ["---"] * len(headers)
     cells = [markdown_escape(task_name), oracle_cell]
-    for agent_id in ordered_ids:
-        stats = by_agent[agent_id]
+    for stats in by_name.values():
         rewards = stats["rewards"]
         assert isinstance(rewards, list)
         mean = sum(rewards) / len(rewards) if rewards else None
