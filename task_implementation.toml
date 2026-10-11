@@ -288,15 +288,17 @@ PASS if the solution derives the answer through a genuine computation process an
 
 [[criteria]]
 name = "environment_hygiene"
-description = "No tests or solution in Docker image, test deps not baked in, proper apt cleanup"
+description = "No tests or solution in runtime image; all dependencies available at build time; proper apt cleanup"
 guidance = """
 The Docker image should not copy tests/ or solution/ into the runtime build — the /tests folder is automatically copied over by the harness after the agent runs, and the solution is only used by OracleAgent.
 
-Test-only dependencies should be installed in test.sh, not baked into the image build. The Dockerfile should only install packages and set up the environment that the agent needs to complete the task. For example, if a Python package is only needed by test_state.py but not by the task's start state, it belongs in test.sh, not the Dockerfile.
+Honeydew submissions run the agent and verifier in the same runtime image. All dependencies needed by either must be available in that image before execution, including verifier-only packages such as pytest and any required reporting plugin. Install missing packages at image build time using an approved offline base or vendored dependency bundle. An optional tests/Dockerfile may support local testing, but it cannot be the only place verifier dependencies are installed. Verifier packages are allowed in the runtime image; verifier code, private fixtures, expected outputs, and solution files are not.
+
+Do not install dependencies at runtime in test.sh, solve.sh, or scripts they invoke. Public network access to scientific services does not permit fetching the toolchain at runtime.
 
 Apt packages should not be pinned to specific versions. Apt installs should be preceded by apt-get update and followed by rm -rf /var/lib/apt/lists/* cleanup.
 
-PASS if the Docker image is clean: no tests/solution copied in, test deps in test.sh not Dockerfile, apt properly managed. FAIL if tests or solution are in the image, test-only dependencies are baked into the Dockerfile, or apt is improperly managed."""
+PASS if no tests/solution or private answer data are copied into the runtime image, agent and verifier dependencies are available before execution, no runtime dependency installs occur, and apt is properly managed. FAIL if tests, solution, or private answer data are in the image, required dependencies are missing from the shared runtime image, runtime dependency installs occur, or apt is improperly managed."""
 
 [[criteria]]
 name = "structured_data_schema"
@@ -362,13 +364,13 @@ PASS if the explanation clearly and concisely describes the verification strateg
 name = "category_and_tags"
 description = "Classification fields and tags are meaningful and relevant to the task"
 guidance = """
-TB-Science tasks use domain/field/subfield instead of a category field. Do NOT flag the absence of a 'category' field — it is intentionally not used in this benchmark.
+Honeydew submissions use [metadata].category and [metadata].tags. Workbench submission validation requires a non-empty category and at least one non-empty tag. The category should accurately describe the task's scientific area. Do not require or add domain, field, or subfield: Workbench rejects those metadata keys as unsupported fields.
 
 Tags should be specific, relevant keywords that help classify the task and make it discoverable. Tags should describe the skills, tools, scientific domains, or methods involved — not generic terms. Good tags: ["finite-volume", "fluid-dynamics", "python", "conservation-laws"]. Bad tags: ["hard", "coding", "task"].
 
-The template default is tags = []. If tags are unchanged (empty list), the author likely forgot to set them.
+Replace the scaffold's example category and tags with task-specific values. An empty category or tag list is invalid; populated scaffold examples are not evidence of meaningful classification by themselves.
 
-PASS if domain/field/subfield accurately reflect the task's scientific domain and tags are specific and relevant. FAIL if the classification is wrong, tags are generic or irrelevant, or defaults were left unchanged. Suggest better tags if applicable."""
+PASS if category accurately reflects the task's scientific area and tags are specific and relevant. FAIL if category or tags are missing, empty, misleading, generic, or irrelevant, or placeholder values were left unchanged. Suggest better tags if applicable. Unsupported metadata keys are assessed under task_toml_schema."""
 
 [[criteria]]
 name = "task_name"
@@ -443,10 +445,12 @@ task.toml must contain only fields recognized by Harbor. Extra fields are silent
 
 Valid sections and their fields (defined by the Harbor library):
 
-[metadata] — free-form in Harbor, but this benchmark expects only these fields:
+[metadata] — free-form in Harbor, but Honeydew's Workbench submission parser accepts only these fields:
 - author_name, author_email, author_organization
 - difficulty_explanation, solution_explanation, verification_explanation
 - category, tags, expert_time_estimate_hours
+
+category and tags are the classification fields; domain, field, and subfield are not supported. category must be non-empty, and tags must contain at least one non-empty entry.
 
 [verifier]:
 - timeout_sec, env, user, environment_mode

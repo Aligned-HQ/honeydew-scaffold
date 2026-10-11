@@ -467,6 +467,12 @@ calling a live service: a slow or changed remote response would make grading
 non-deterministic. They must never install anything. As with the solution,
 import the libraries you need and let the task-fixer sort out installing them.
 
+Honeydew runs the agent and verifier in the same runtime image. Install all
+required packages, including verifier-only packages such as `pytest`, at image
+build time from an approved offline base or vendored bundle. Keep verifier code,
+private fixtures, expected outputs, and solution files out of the image. A local
+`tests/Dockerfile` does not replace installing dependencies in the shared image.
+
 ### 4.6 Complete `task.toml` deliberately
 
 Fill in the placeholder values in task.toml.
@@ -482,6 +488,11 @@ Use only fields supported by the Harbor version used by the runner. The review r
 - `[agent]`: timeout and user;
 - `[environment]`: build timeout, image/resources, internet, env, skills/MCP, and healthcheck settings;
 - `[solution]`: env.
+
+Use a non-empty `[metadata].category` and at least one non-empty tag to classify
+the task. Workbench requires these fields and rejects `domain`, `field`, and
+`subfield` as unsupported metadata keys. Choose a category for the scientific
+area and specific tags for the skills, tools, and methods involved.
 
 The scaffold intentionally uses a namespaced placeholder task name, a non-zero time estimate, concrete resource defaults, populated tags, and non-empty explanation text so an author can see the complete shape. Replace those values with task-specific facts. Do not add invented fields such as `prerequisites`, `estimated_difficulty`, `notes`, or an informal `skills` list.
 

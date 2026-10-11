@@ -63,6 +63,17 @@ Treat `tests/Dockerfile` as an optional local two-image fixture, not a task
 prerequisite, and do not fail a task or require a second image solely because
 that optional file is absent.
 
+For `environment_hygiene`, require agent and verifier dependencies to be
+available in the shared runtime image before execution. Verifier-only packages
+such as pytest are allowed and required when the verifier uses them. Keep
+verifier code, private fixtures, expected outputs, and solution files out of the
+image, and reject runtime dependency installs.
+
+For `category_and_tags` and `task_toml_schema`, use `[metadata].category` and
+`[metadata].tags`, as required by Workbench submission validation. Require a
+non-empty category and at least one non-empty, relevant tag. Do not require
+`domain`, `field`, or `subfield`; those keys are unsupported metadata fields.
+
 ## Inputs
 
 - **Rubric**: `task_implementation.toml` at the repo root. Read every
